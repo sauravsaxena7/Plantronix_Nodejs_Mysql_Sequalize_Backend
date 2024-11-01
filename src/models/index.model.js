@@ -1,18 +1,20 @@
-const { Sequelize } = require("sequelize");
-const dbConfig = require("../config/config")[process.env.NODE_ENV || "development"];
-const sequelize = new Sequelize(dbConfig);
+import { db } from "../server";
+import { createRoleModel } from "./role.model";
+import { createUserModel } from "./user.model";
 
-const User = require("./user")(sequelize);
-const Role = require("./role")(sequelize);
-const Permission = require("./permission")(sequelize);
-const UserPermission = require("./userPermission")(sequelize);
+const sequelize = db?.sequelize
+
+const User = createUserModel(sequelize);
+const Role = createRoleModel(sequelize)
+// const Permission = require("./permission")(sequelize);
+// const UserPermission = require("./userPermission")(sequelize);
 
 Role.hasMany(User, { foreignKey: "roleId" });
 User.belongsTo(Role, { foreignKey: "roleId" });
 
-User.belongsToMany(Permission, { through: UserPermission, foreignKey: "userId" });
-Permission.belongsToMany(User, { through: UserPermission, foreignKey: "permissionId" });
+// User.belongsToMany(Permission, { through: UserPermission, foreignKey: "userId" });
+// Permission.belongsToMany(User, { through: UserPermission, foreignKey: "permissionId" });
 
 sequelize.sync({ alter: true });
 
-module.exports = { sequelize, User, Role, Permission, UserPermission };
+export{ sequelize, User, Role };

@@ -1,17 +1,35 @@
-const { DataTypes } = require("sequelize");
-const bcrypt = require("bcrypt");
-const { SALT_ROUNDS } = process.env;
+import { DataTypes } from "sequelize";
+import { GLOBAL_CONFIG } from "../config/config";
 
-module.exports = (sequelize) => {
+const createUserModel = (sequelize) => {
   const User = sequelize.define("User", {
+    userId: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      allowNull: false,
+      autoIncrement: true,
+    },
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     username: { type: DataTypes.STRING, unique: true, allowNull: false },
-    password: { type: DataTypes.STRING, allowNull: false },
     roleId: { type: DataTypes.INTEGER, allowNull: false },
     refreshToken: { type: DataTypes.STRING },
+  }, {
+    tableName: "users"
   });
 
   User.beforeCreate(async (user) => {
-    user.password = await bcrypt.hash(user.password, parseInt(SALT_ROUNDS, 10));
+    user.password = await bcrypt.hash(user.password, parseInt(GLOBAL_CONFIG.saltRounds, 10));
   });
 
   User.prototype.validatePassword = async function (password) {
@@ -20,3 +38,5 @@ module.exports = (sequelize) => {
 
   return User;
 };
+
+export { createUserModel }

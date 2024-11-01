@@ -1,18 +1,21 @@
-const express = require("express");
-const rateLimiter = require("./config/rateLimit");
-const authRoutes = require("./routes/authRoutes");
-const auditMiddleware = require("./middlewares/auditMiddleware");
-const errorMiddleware = require("./middlewares/errorMiddleWare");
 
+import express from "express";
+import cors from "cors";
+import rootsRouter from "./routes/roots.route"
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({extended:true}))
-app.use(rateLimiter);
-app.use(auditMiddleware); // Add audit logging middleware
+// app.use(cors({
+//     origin: process.env.CORS_ORIGIN,
+//     credentials: true
+// }))
 
-app.use("/auth", authRoutes);
+app.use(cors())
+app.use(express.json({limit: "16kb"}))
+app.use(express.urlencoded({extended: true, limit: "16kb"}))
+app.use(express.static("public"))
 
-app.use(errorMiddleware); // Centralized error handling
+app.use("/api/v1", rootsRouter);
 
-module.exports = app;
+// app.use(errorMiddleware); // Centralized error handling
+
+export {app}
