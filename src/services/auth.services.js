@@ -3,10 +3,9 @@
 // const bcrypt = require("bcrypt");
 
 import { QueryTypes } from "sequelize";
-import { Role } from "../models/index.model";
-import { ApiError } from "../utils/ApiError";
-import { asyncHandler } from "../utils/asyncHandler";
-import { db } from "../server";
+import { Role ,sequelize} from "../models/index.model.js";
+import { ApiError } from "../utils/ApiError.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const registerUser = asyncHandler(async (username, password, roleName, email) => {
   const role = await Role.findOne({ where: { name: roleName } });
@@ -17,7 +16,7 @@ const registerUser = asyncHandler(async (username, password, roleName, email) =>
   ) {
     throw new ApiError(400, "All fields are required")
   }
-  const existingUser = await db?.sequelize?.query('SELECT * FROM users WHERE username = :username or email=:email', {
+  const existingUser = await sequelize?.query('SELECT * FROM users WHERE username = :username or email=:email', {
     replacements: { username: username, email: email },
     type: QueryTypes.SELECT,
   });

@@ -1,7 +1,7 @@
-import { registerUser } from "../services/auth.services";
-import { ApiResponse } from "../utils/ApiResponse";
+import { registerUser } from "../services/auth.services.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
-const register = async (req, res, next) => {
+const register = async (req, res) => {
 
     const { username, password, roleName,email } = req.body;
     const createdUser = await registerUser(username, password, roleName,email);

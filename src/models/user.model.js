@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
-import { GLOBAL_CONFIG } from "../config/config";
+import { GLOBAL_CONFIG } from "../config/config.js";
 
 const createUserModel = (sequelize) => {
-  const User = sequelize.define("User", {
+  const User = sequelize?.define("User", {
     userId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -28,13 +28,16 @@ const createUserModel = (sequelize) => {
     tableName: "users"
   });
 
-  User.beforeCreate(async (user) => {
+  User?.beforeCreate(async (user) => {
     user.password = await bcrypt.hash(user.password, parseInt(GLOBAL_CONFIG.saltRounds, 10));
   });
 
-  User.prototype.validatePassword = async function (password) {
-    return await bcrypt.compare(password, this.password);
-  };
+  if(User){
+    User.prototype.validatePassword = async function (password) {
+      return await bcrypt.compare(password, this.password);
+    };
+  }
+  
 
   return User;
 };

@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 
 const createRoleModel = (sequelize) => {
-  const Role = sequelize.define("Role", {
+  const Role = sequelize?.define("Role", {
     roleId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
