@@ -1,42 +1,96 @@
-import { registerUser } from "../services/auth.services.js";
+import { Role,User,Sequelize } from "../models/index.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import {ApiError} from "../utils/ApiError.js"
+import { Op, QueryTypes } from "sequelize";
 
-const register = async (req, res) => {
+const register = asyncHandler(async (req,res,next) => {
 
-    const { username, password, roleName,email } = req.body;
-    const createdUser = await registerUser(username, password, roleName,email);
-    res.status(201).json(
-      new ApiResponse(200, createdUser, "User registered Success")
-    )
-};
+  const { username, password, roleName,email } = req.body;
+  
+  const role = await Role.findOne({ where: { name: roleName } });
+  console.log("role",role)
+  if (!role) throw new ApiError(404, "Role not found");
 
-// exports.login = async (req, res, next) => {
-//   try {
-//     const { username, password } = req.body;
-//     if (!username || !password) {
-//       throw new ValidationError("Username and password are required");
-//     }
-
-//     const tokens = await authService.loginUser(username, password);
-//     res.json({ message: "Login successful", tokens });
-//   } catch (error) {
-//     if (error.message === "Invalid credentials") {
-//       next(new AuthError());
-//     } else {
-//       next(error);
-//     }
-//   }
-// };
+  if (
+    [email, username, password].some((field) => field?.trim() === "")
+  ) {
+    throw new ApiError(400, "All fields are required")
+  }
+  const existingUser = await Sequelize.query('SELECT * FROM users WHERE username = :username OR email=:email', {
+    replacements: { username: username, email: email },
+    type: QueryTypes.SELECT,
+  });
 
 
-// exports.refreshToken = async (req, res) => {
-//   try {
-//     const { refreshToken } = req.body;
-//     const accessToken = await authService.refreshAccessToken(refreshToken);
-//     res.json({ accessToken });
-//   } catch (error) {
-//     res.status(403).json({ error: "Invalid refresh token" });
-//   }
-// };
+  console.log("existingUser",existingUser);
 
-export{register}
+  if (existingUser?.length>0) {
+    throw new ApiError(409, "User with email or username already exists")
+  }
+
+  const savedUser =await User.create({username: username, password: password, roleId: role.roleId ,email:email });
+  delete savedUser.dataValues.password
+  console.log("savedUser",savedUser);
+  res.status(201).json(
+    new ApiResponse(200, savedUser, "User registered Success")
+  );
+});
+
+const loginUser = asyncHandler(async (req, res) =>{
+  // req body -> data
+  // username or email
+  //find the user
+  //password check
+  //access and referesh token
+  //send cookie
+
+  const {email, username, password} = req.body
+  console.log(email);
+
+  if (!username && !email) {
+      throw new ApiError(400, "username or email is required")
+  }
+  
+  // Here is an alternative of above code based on logic discussed in video:
+  // if (!(username || email)) {
+  //     throw new ApiError(400, "username or email is required")
+      
+  // }
+
+  const ExistingUser = await User.findOne({
+    where: {
+      [Op.or]: [{ username: username }, { email: email }],
+    },
+  });
+
+  if (!ExistingUser) {
+      throw new ApiError(404, "User does not exist")
+  }
+
+ const isPasswordValid =  await ExistingUser.validatePassword(password);
+
+ if (!isPasswordValid) {
+  throw new ApiError(401, "Invalid user credentials")
+  }
+
+   
+ const token = await ExistingUser.generateAccessToken();
+ delete ExistingUser.dataValues.password
+ console.log("ExistingUser",ExistingUser)
+  return res
+  .status(200)
+  .json(
+      new ApiResponse(
+          200, 
+          {
+              user: ExistingUser, token:token
+          },
+          "User logged In Successfully"
+      )
+  )
+
+})
+
+
+export{register,loginUser}

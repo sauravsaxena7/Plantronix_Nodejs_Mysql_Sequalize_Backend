@@ -18,4 +18,17 @@ app.use("/api/v1", rootsRouter);
 
 // app.use(errorMiddleware); // Centralized error handling
 
+
+// Global error-handling middleware
+app.use((err, req, res, next) => {
+    console.error("Error handled by error middleware:", err.message);
+
+    // Customize the response based on the error type
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || "An unexpected error occurred",
+    });
+});
+
+
 export {app}

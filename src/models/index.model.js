@@ -1,21 +1,29 @@
-import { connectDb } from "../db/db.connection.js";
 import { createRoleModel } from "./role.model.js";
 import { createUserModel } from "./user.model.js";
 
-const db =  connectDb();
-const sequelize = db?.sequelize
+let User=null,Sequelize=null,Role=null;
 
-const User = createUserModel(sequelize);
-const Role = createRoleModel(sequelize)
-// const Permission = require("./permission")(sequelize);
-// const UserPermission = require("./userPermission")(sequelize);
+const initalizeModel = (sequelize) => {
+    Sequelize=sequelize;
 
-Role?.hasMany(User, { foreignKey: "roleId" });
-User?.belongsTo(Role, { foreignKey: "roleId" });
+     User = createUserModel(sequelize);
+     Role = createRoleModel(sequelize)
+    // const Permission = require("./permission")(sequelize);
+    // const UserPermission = require("./userPermission")(sequelize);
 
-// User.belongsToMany(Permission, { through: UserPermission, foreignKey: "userId" });
-// Permission.belongsToMany(User, { through: UserPermission, foreignKey: "permissionId" });
+    Role.hasMany(User, { foreignKey: "roleId" });
+    User.belongsTo(Role, { foreignKey: "roleId" });
 
-sequelize?.sync({ alter: true });
+    // User.belongsToMany(Permission, { through: UserPermission, foreignKey: "userId" });
+    // Permission.belongsToMany(User, { through: UserPermission, foreignKey: "permissionId" });
 
-export{ sequelize, User, Role };
+    sequelize.sync({ alter: true });
+    
+
+}
+
+
+
+
+
+export { Sequelize, User, Role ,initalizeModel};
