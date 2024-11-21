@@ -92,5 +92,23 @@ const loginUser = asyncHandler(async (req, res) =>{
 
 })
 
+const getCurrentUser= asyncHandler( async(req,res)=>{
+  const currentUser =req.User
+  delete currentUser.dataValues.password
+  return res
+  .status(200)
+  .json(
+      new ApiResponse(
+          200, 
+          {
+              user: currentUser
+          },
+          "User Fetched Successfully"
+      )
+  )
 
-export{register,loginUser}
+
+});
+
+
+export{register,loginUser,getCurrentUser}

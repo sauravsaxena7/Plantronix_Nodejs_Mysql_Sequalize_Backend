@@ -24,7 +24,8 @@ app.use((err, req, res, next) => {
     console.error("Error handled by error middleware:", err.message);
 
     // Customize the response based on the error type
-    res.status(err.status || 500).json({
+    res.status(err.statusCode || 500).json({
+        status:err.statusCode,
         success: false,
         message: err.message || "An unexpected error occurred",
     });
